@@ -1,0 +1,5 @@
+/vendor/
+/node_modules/
+/.vscode/
+/storage/cache/
+/storage/uploads/
