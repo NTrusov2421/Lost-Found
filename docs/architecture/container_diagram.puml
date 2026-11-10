@@ -1,0 +1,29 @@
+@startuml
+title C4 — Level 2: контейнеры системы «Бюро находок»
+left to right direction
+
+actor "Гость / пользователь /\nадминистратор" as Actor
+rectangle "Веб-браузер\nHTML, CSS, JavaScript" as Browser
+rectangle "PHP-приложение\nМодульный монолит\n\nКонтроллеры и проверка прав\nСервисы бизнес-логики\nPHP-шаблоны страниц" as App
+database "Реляционная БД\n\nusers, roles, categories\nitems, password_reset_tokens\ncomplaints" as DB
+folder "storage/uploads\nФайлы объявлений" as Uploads
+folder "storage/cache\nJSON-кэш данных" as Cache
+
+Actor --> Browser : Вводит данные, просматривает страницы
+Browser --> App : HTTP/HTTPS запросы и формы
+App --> Browser : HTML-страницы и сообщения об ошибках
+App --> DB : SQL-запросы через подготовленные выражения
+App --> Uploads : Сохранение и чтение вложений
+App --> Cache : Чтение/обновление JSON-кэша при необходимости
+
+note bottom of App
+Отдельный REST API не предполагается:
+интерфейс и серверная логика работают
+в одном PHP-приложении.
+end note
+
+note bottom of Uploads
+Разрешённые типы и
+размер проверяются на стороне сервера.
+end note
+@enduml
