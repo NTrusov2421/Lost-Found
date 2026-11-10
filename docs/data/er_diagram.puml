@@ -1,0 +1,88 @@
+@startuml
+title Целевая ER-диаграмма «Бюро находок»
+
+entity "roles" as roles {
+  * id : SMALLINT <<PK>>
+  --
+  * role_name : VARCHAR(30) <<UQ>>
+}
+
+entity "users" as users {
+  * id : BIGINT <<PK>>
+  --
+  * username : VARCHAR(60) <<UQ>>
+  * email : VARCHAR(254) <<UQ>>
+  phone : VARCHAR(30)
+  address : VARCHAR(255)
+  * password_hash : VARCHAR(255)
+  * role_id : SMALLINT <<FK>>
+  * created_at : DATETIME
+}
+
+entity "categories" as categories {
+  * id : BIGINT <<PK>>
+  --
+  * item_category : VARCHAR(100) <<UQ>>
+}
+
+entity "items" as items {
+  * id : BIGINT <<PK>>
+  --
+  * title : VARCHAR(200)
+  * description : TEXT
+  * category_id : BIGINT <<FK>>
+  author_user_id : BIGINT <<FK, NULL>>
+  attachment_path : VARCHAR(255) <<NULL>>
+  * is_found : BOOLEAN
+  * contacts : TEXT
+  * location : VARCHAR(255)
+  * published_at : DATETIME
+  updated_at : DATETIME
+  * expires_at : DATETIME
+}
+
+entity "password_reset_tokens" as tokens {
+  * id : BIGINT <<PK>>
+  --
+  * user_id : BIGINT <<FK>>
+  * token_hash : VARCHAR(255) <<UQ>>
+  * expires_at : DATETIME
+  used_at : DATETIME <<NULL>>
+  * created_at : DATETIME
+}
+
+entity "complaints" as complaints {
+  * id : BIGINT <<PK>>
+  --
+  item_id : BIGINT <<FK, NULL>>
+  reporter_user_id : BIGINT <<FK, NULL>>
+  * reason : VARCHAR(100)
+  details : TEXT <<NULL>>
+  * status : VARCHAR(20)
+  * created_at : DATETIME
+  reviewed_by_user_id : BIGINT <<FK, NULL>>
+  reviewed_at : DATETIME <<NULL>>
+}
+
+roles ||--o{ users
+categories ||--o{ items
+users o--o{ items : "автор; NULL для гостя"
+users ||--o{ tokens : "токены сброса"
+items o--o{ complaints : "жалобы на объявление"
+users o--o{ complaints : "заявитель"
+users o--o{ complaints : "рассмотрел"
+
+note right of items
+  is_found = TRUE — «Найдено»;
+  is_found = FALSE — «Потеряно».
+  author_user_id = NULL означает
+  гостевое объявление.
+  attachment_path хранит путь файла.
+end note
+
+note bottom of complaints
+  При удалении объявления или пользователя
+  жалоба должна сохраняться, а внешняя
+  ссылка становится NULL (ON DELETE SET NULL).
+end note
+@enduml
